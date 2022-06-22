@@ -9,9 +9,12 @@
 
 #include "mylib/shader_s.h"
 #include "mylib/filesystem.h"
+#include "mylib/camera.h"
 
 void processInput(GLFWwindow* window, const float deltaTime);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 float vertices[] = {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -83,9 +86,16 @@ glm::vec3 cubePositions[] = {
   glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+// 窗口大小
+int windowWidth = 800;
+int windowHeight = 600;
+
+// 上一帧鼠标位置
+float lastX = windowWidth / 2;
+float lastY = windowHeight / 2;
+bool firstMouse = true;
+
+Camera ourCamera;
 
 int run()
 {
@@ -95,7 +105,7 @@ int run()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -104,6 +114,8 @@ int run()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -199,13 +211,7 @@ int run()
     ourShader.setInt("texture2", 1);
 
     // 设置模型矩阵、视角矩阵、投影矩阵
-    glm::mat4 model;
-
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-    glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glm::mat4 model, view, projection;
 
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
@@ -214,6 +220,9 @@ int run()
     float deltaTime = 0.0f; // 当前帧与上一帧的时间差
     float lastFrame = glfwGetTime(); // 上一帧的时间
     float currentFrame = glfwGetTime(); // 当前帧的时间
+
+    // 捕获光标，并捕捉光标位置
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
@@ -234,7 +243,7 @@ int run()
 
         ourShader.use();
 
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        view = ourCamera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
         glBindVertexArray(VAO);
@@ -247,6 +256,11 @@ int run()
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+
+        projection = ourCamera.GetProjectMatrix();
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
@@ -262,6 +276,8 @@ int run()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    windowWidth = width;
+    windowHeight = height;
     glViewport(0, 0, width, height);
 }
 
@@ -270,13 +286,38 @@ void processInput(GLFWwindow* window, const float deltaTime)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 0.5 * deltaTime; // adjust accordingly
+    Camera_Movement move = Camera_Movement::none;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        move = Camera_Movement::front;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        move = Camera_Movement::back;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        move = Camera_Movement::left;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        move = Camera_Movement::right;
+
+    ourCamera.SetPos(move, deltaTime);
+}
+
+// 这里的xpos和ypos代表当前鼠标的位置。
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // 注意这里是相反的，因为y坐标是从底部往顶部依次增大的
+    ourCamera.SetPitchYaw(xoffset, yoffset);
+
+    lastX = xpos;
+    lastY = ypos;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    ourCamera.SetFOV(yoffset);
 }
