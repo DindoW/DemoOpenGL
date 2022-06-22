@@ -15,6 +15,9 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 # 设置CMake时候的输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+# 添加搜索头文件的位置
+include_directories(${CMAKE_SOURCE_DIR}/includes)
+
 # 静态链接库，指定要链接的库文件的路径
 link_directories(${CMAKE_SOURCE_DIR}/libs)
 
@@ -39,6 +42,11 @@ function(create_project_from_sources chapter)
 	file(GLOB SOURCE
         "src/${chapter}/*.h"
         "src/${chapter}/*.cpp"
+
+        "includes/mylib/*"
+
+        "shaders/*.vs"
+        "shaders/*.fs"
     )
 	set(NAME "${chapter}")
     add_executable(${NAME} ${SOURCE})
@@ -52,15 +60,6 @@ function(create_project_from_sources chapter)
     set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}")
     set_target_properties(${NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}/Debug")
 
-    # 处理shader，复制到对应输出文件的目录下
-    file(GLOB SHADERS
-        "shaders/*.vs"
-        "shaders/*.fs"
-    )
-    foreach(SHADER ${SHADERS})
-        add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:${NAME}>)
-    endforeach(SHADER)
-
     # 替换vs环境下的代码路径
     configure_file(${CMAKE_SOURCE_DIR}/configuration/visualstudio.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.vcxproj.user @ONLY)
 endfunction()
@@ -73,6 +72,3 @@ set(CHAPTERS
 foreach(CHAPTER ${CHAPTERS})
     create_project_from_sources(${CHAPTER})
 endforeach(CHAPTER)
-
-# 添加搜索头文件的位置
-include_directories(${CMAKE_SOURCE_DIR}/includes)

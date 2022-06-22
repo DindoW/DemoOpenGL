@@ -1,14 +1,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 #include <iostream>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "shader_s.h"
-#include "stb_image.h"
-#include "filesystem.h"
 
-void processInput(GLFWwindow* window);
+#include "mylib/shader_s.h"
+#include "mylib/filesystem.h"
+
+void processInput(GLFWwindow* window, const float deltaTime);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 float vertices[] = {
@@ -81,6 +83,10 @@ glm::vec3 cubePositions[] = {
   glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
 int run()
 {
     glfwInit();
@@ -105,7 +111,7 @@ int run()
         return -1;
     }
 
-    Shader ourShader("shader.vs", "shader.fs");
+    Shader ourShader(FileSystem::getPath("shaders/shader.vs").c_str(), FileSystem::getPath("shaders/shader.fs").c_str());
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -195,9 +201,7 @@ int run()
     // 设置模型矩阵、视角矩阵、投影矩阵
     glm::mat4 model;
 
-    float radius = 10.0f;
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, radius), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -206,10 +210,19 @@ int run()
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
 
-    // 渲染循环
+
+    float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+    float lastFrame = glfwGetTime(); // 上一帧的时间
+    float currentFrame = glfwGetTime(); // 当前帧的时间
+
+    // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
+        currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        processInput(window, deltaTime);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -221,14 +234,7 @@ int run()
 
         ourShader.use();
 
-        double camX = sin(glfwGetTime()) * radius;
-        double camZ = cos(glfwGetTime()) * radius;
-
-        view = glm::lookAt(
-            glm::vec3(camX, 0.0f, camZ),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
-        );
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
         glBindVertexArray(VAO);
@@ -259,8 +265,18 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, const float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 0.5 * deltaTime; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
