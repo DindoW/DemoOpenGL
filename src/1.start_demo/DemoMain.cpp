@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shader_s.h"
 #include "stb_image.h"
+#include "filesystem.h"
 
 void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -104,7 +105,7 @@ int run()
         return -1;
     }
 
-    Shader ourShader("../../../shaders/shader.vs", "../../../shaders/shader.fs");
+    Shader ourShader("shader.vs", "shader.fs");
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -156,7 +157,7 @@ int run()
     // 为纹理加载图像
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load("resources/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(FileSystem::getPath("resources/container.jpg").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -176,7 +177,7 @@ int run()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 为纹理加载图像
-    data = stbi_load("resources/awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load(FileSystem::getPath("resources/awesomeface.png").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
