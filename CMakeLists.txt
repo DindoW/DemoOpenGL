@@ -14,13 +14,28 @@ add_executable (DemoOpenGL
 	"includes/GLFW/glfw3.h"
 	"includes/GLFW/glfw3native.h"
 	"includes/glad/glad.h"
+	"includes/KHR/khrplatform.h"
 
 	"src/DemoOpenGL.cpp"
 	"src/DemoOpenGL.h"
 	"src/glad.c"
-	"src/GameMain.cpp"
-	"includes/KHR/khrplatform.h"
-)
+	"src/image.cpp"
+	"src/shader_s.h"
+	"src/stb_image.h"
+	"src/DemoMain.cpp"
+
+	"includes/glm/detail/glm.cpp"
+	"includes/glm/simd/common.h"
+	"includes/glm/simd/exponential.h"
+	"includes/glm/simd/geometric.h"
+	"includes/glm/simd/integer.h"
+	"includes/glm/simd/matrix.h"
+	"includes/glm/simd/neon.h"
+	"includes/glm/simd/packing.h"
+	"includes/glm/simd/platform.h"
+	"includes/glm/simd/trigonometric.h"
+	"includes/glm/simd/vector_relational.h"
+ )
 
 target_link_libraries(DemoOpenGL glfw3)
 
