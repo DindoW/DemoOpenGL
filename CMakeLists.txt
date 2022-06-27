@@ -66,6 +66,7 @@ endfunction()
 
 set(CHAPTERS
     1.start_demo
+    2.light_demo
 )
 
 # 为上面定义的章节创建子工程
