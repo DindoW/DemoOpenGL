@@ -38,7 +38,7 @@ public:
 	{
 	}
 
-	void SetPos(Camera_Movement move, float deltaTime)
+	void SetPos(Camera_Movement move, const float deltaTime)
 	{
 		float cameraSpeed = posSensitivity * deltaTime; // adjust accordingly
 		switch (move)
@@ -60,7 +60,7 @@ public:
 		}
 	}
 
-	void SetPitchYaw(float xoffset, float yoffset)
+	void SetPitchYaw(double xoffset, double yoffset)
 	{
 		xoffset *= sensitivity;
 		yoffset *= sensitivity;
