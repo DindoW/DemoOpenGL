@@ -31,11 +31,39 @@ private:
 	float sensitivity = 0.05f;
 
 	// Ïà»ú¼üÅÌÁéÃô¶È
-	float posSensitivity = 0.5f;
+	float posSensitivity = 1.0f;
+
+	// ¹Û²ì¾ØÕó
+	glm::mat4 viewMatrix;
+
+	// Í¸ÊÓ¾ØÕó
+	glm::mat4 projMatrix;
+
+	void _UpdateViewMatrix()
+	{
+		viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	}
+
+	void _UpdateProjMatrix()
+	{
+		projMatrix = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+	}
 
 public:
-	Camera():cameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), cameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), cameraUp(glm::vec3(0.0f, 1.0f, 0.0f))
+	Camera():
+		cameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
+		cameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
+		cameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
+		viewMatrix(glm::mat4(1.0f)),
+		projMatrix(glm::mat4(1.0f))
 	{
+		_UpdateViewMatrix();
+		_UpdateProjMatrix();
+	}
+
+	const glm::vec3& GetPos()
+	{
+		return cameraPos;
 	}
 
 	void SetPos(Camera_Movement move, const float deltaTime)
@@ -56,8 +84,9 @@ public:
 			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 			break;
 		default:
-			break;
+			return;
 		}
+		_UpdateViewMatrix();
 	}
 
 	void SetPitchYaw(double xoffset, double yoffset)
@@ -74,6 +103,7 @@ public:
 		front.y = sin(glm::radians(pitch));
 		front.z = -cos(glm::radians(pitch)) * cos(glm::radians(yaw));
 		cameraFront = glm::normalize(front);
+		_UpdateViewMatrix();
 	}
 
 	void SetFOV(float yOffset)
@@ -84,15 +114,16 @@ public:
 			fov = 1.0f;
 		if (fov >= 45.0f)
 			fov = 45.0f;
+		_UpdateProjMatrix();
 	}
 
-	glm::mat4& GetViewMatrix()
+	const glm::mat4& GetViewMatrix()
 	{
-		return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		return viewMatrix;
 	}
 
-	glm::mat4& GetProjectMatrix()
+	const glm::mat4& GetProjectMatrix()
 	{
-		return glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+		return projMatrix;
 	}
 };

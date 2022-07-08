@@ -12,28 +12,83 @@
 #include "mylib/camera.h"
 
 // VAO & VBO 数据
-float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+//float vertices[] = {
+//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+//
+//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+//};
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+float vertices[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
 
 // EBO，注意索引从0开始 
+//unsigned int indices[] = {
+//    0, 1, 2, 2, 3, 0,  // -Z
+//    4, 5, 6, 6, 7, 4,  // +z
+//
+//    5, 1, 2, 2, 6, 5,  // +x
+//    0, 4, 7, 7, 3, 0,  // -x
+//
+//    7, 6, 2, 2, 3, 7,  // +y
+//    0, 1, 5, 5, 4, 0,  // -y
+//};
+
 unsigned int indices[] = {
-    0, 1, 2, 2, 3, 0,  // -Z
-    4, 5, 6, 6, 7, 4,  // +z
+    0, 1, 2, 3, 4, 5,  // -Z
+    6, 7, 8, 9, 10, 11,  // +z
 
-    5, 1, 2, 2, 6, 5,  // +x
-    0, 4, 7, 7, 3, 0,  // -x
+    12, 13, 14, 15, 16, 17,  // +x
+    18, 19, 20, 21, 22, 23,  // -x
 
-    7, 6, 2, 2, 3, 7,  // +y
-    0, 1, 5, 5, 4, 0,  // -y
+    24, 25, 26, 27, 28, 29,  // +y
+    30, 31, 32, 33, 34, 35,  // -y
 };
 
 // 窗口大小
@@ -128,8 +183,10 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -140,7 +197,7 @@ int main()
     glBindVertexArray(lightVAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);  // 设置灯立方体的顶点属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);  // 设置灯立方体的顶点属性
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -158,12 +215,20 @@ int main()
     // 捕获光标，并捕捉光标位置
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // 设置模型矩阵、视角矩阵、投影矩阵
-    glm::mat4 model, view, projection;
+    // 视角矩阵、投影矩阵
+    const glm::mat4& view = ourCamera.GetViewMatrix();
+    const glm::mat4& proj = ourCamera.GetProjectMatrix();
 
     // 灯的模型矩阵
-    glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), glm::vec3(1.5f, 1.0f, -1.0f));
+    glm::vec3 lightPos = glm::vec3(1.5f, 1.0f, 1.0f);
+    glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), lightPos);
     lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+
+    // 物体的模型矩阵
+    glm::mat4 objModel(1.0f);
+
+    // 允许深度测试
+    glEnable(GL_DEPTH_TEST);
 
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
@@ -175,19 +240,18 @@ int main()
         processInput(window, deltaTime);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 绘制物体
         ourShader.use();
-        view = ourCamera.GetViewMatrix();
-        model = glm::mat4(1.0f);
-        projection = ourCamera.GetProjectMatrix();
-
         ourShader.setMat4("view", view);
-        ourShader.setMat4("model", model);
-        ourShader.setMat4("projection", projection);
+        ourShader.setMat4("model", objModel);
+        ourShader.setMat4("projection", proj);
         ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.3f);
         ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        ourShader.setVec3("lightPos", lightPos);
+        ourShader.setVec3("viewPos", ourCamera.GetPos());
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -195,7 +259,8 @@ int main()
         lightingShader.use();
         lightingShader.setMat4("view", view);
         lightingShader.setMat4("model", lightModel);
-        lightingShader.setMat4("projection", projection);
+        lightingShader.setMat4("projection", proj);
+
         glBindVertexArray(lightVAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
