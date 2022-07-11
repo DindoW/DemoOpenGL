@@ -7,9 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "mylib/shader_s.h"
-#include "mylib/filesystem.h"
-#include "mylib/camera.h"
+#include <mylib/shader_s.h>
+#include <mylib/camera.h>
+#include <mylib/filesystem.h>
 
 // VAO & VBO 数据
 //float vertices[] = {
@@ -203,7 +203,8 @@ int main()
     glBindVertexArray(0);
 
     // 渲染物体用的shader
-    Shader ourShader(FileSystem::getPath("shaders/shader_2.vs").c_str(), FileSystem::getPath("shaders/shader_2.fs").c_str());
+    //Shader ourShader(FileSystem::getPath("shaders/shader_2.vs").c_str(), FileSystem::getPath("shaders/shader_2.fs").c_str());
+    Shader objectShader(FileSystem::getPath("shaders/shader_2_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
 
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
@@ -243,14 +244,40 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 绘制物体
-        ourShader.use();
-        ourShader.setMat4("view", view);
-        ourShader.setMat4("model", objModel);
-        ourShader.setMat4("projection", proj);
-        ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.3f);
-        ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-        ourShader.setVec3("lightPos", lightPos);
-        ourShader.setVec3("viewPos", ourCamera.GetPos());
+        //ourShader.use();
+        //ourShader.setMat4("view", view);
+        //ourShader.setMat4("model", objModel);
+        //ourShader.setMat4("projection", proj);
+        //ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.3f);
+        //ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        //ourShader.setVec3("lightPos", lightPos);
+        //ourShader.setVec3("viewPos", ourCamera.GetPos());
+        objectShader.use();
+        objectShader.setMat4("view", view);
+        objectShader.setMat4("model", objModel);
+        objectShader.setMat4("projection", proj);
+        objectShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        objectShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        objectShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        objectShader.setFloat("material.shininess", 32.0f);
+        objectShader.setVec3("light.position", lightPos);
+
+        glm::vec3 lightColor;
+        lightColor.x = sin(glfwGetTime() * 2.0f);
+        lightColor.y = sin(glfwGetTime() * 0.7f);
+        lightColor.z = sin(glfwGetTime() * 1.3f);
+
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // 降低影响
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+
+        objectShader.setVec3("light.ambient", ambientColor);
+        objectShader.setVec3("light.diffuse", diffuseColor);
+
+        //objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        //objectShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+        objectShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        objectShader.setVec3("viewPos", ourCamera.GetPos());
+
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
