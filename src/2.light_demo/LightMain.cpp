@@ -193,6 +193,53 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastY = ypos;
 }
 
+// 加载纹理图像资源
+unsigned int loadResource(const char* filePath)
+{
+    unsigned int texture;
+    glGenTextures(1, &texture);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(filePath, &width, &height, &nrChannels, 0);
+
+    if (data)
+    {
+        GLenum format;
+        switch (nrChannels)
+        {
+        case 1:
+            format = GL_RED;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        default:
+            std::cout << "Error on channels: " << nrChannels << std::endl;
+            break;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // 为当前绑定的纹理对象设置环绕、过滤方式
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    return texture;
+}
+
+
 int main()
 {
     // 初始化，版本号
@@ -256,28 +303,14 @@ int main()
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
 
-    // 加载纹理
-    unsigned int texture1;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // 为当前绑定的纹理对象设置环绕、过滤方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(FileSystem::getPath("resources/container2.png").c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    // 加载纹理1
+    unsigned int texture1 = loadResource(FileSystem::getPath("resources/container2.png").c_str());
     objectShader.use();
     objectShader.setInt("material.diffuse", 0);
+    // 加载纹理2
+    unsigned int texture2 = loadResource(FileSystem::getPath("resources/container2_specular.png").c_str());
+    objectShader.use();
+    objectShader.setInt("material.specular", 1);
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
@@ -291,7 +324,7 @@ int main()
     const glm::mat4& proj = ourCamera.GetProjectMatrix();
 
     // 灯的模型矩阵
-    glm::vec3 lightPos = glm::vec3(1.5f, 1.0f, 1.0f);
+    glm::vec3 lightPos = glm::vec3(1.5f, 1.0f, -0.5f);
     glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), lightPos);
     lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
@@ -318,7 +351,7 @@ int main()
         objectShader.setMat4("view", view);
         objectShader.setMat4("model", objModel);
         objectShader.setMat4("projection", proj);
-        objectShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        //objectShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
         objectShader.setFloat("material.shininess", 32.0f);
         objectShader.setVec3("light.position", lightPos);
         objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
@@ -328,6 +361,9 @@ int main()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
