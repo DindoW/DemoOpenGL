@@ -136,6 +136,19 @@ unsigned int indices[] = {
     30, 31, 32, 33, 34, 35,  // -y
 };
 
+glm::vec3 cubePositions[] = {
+    glm::vec3(0.0f,  0.0f,  0.0f),
+    glm::vec3(2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f,  3.0f, -7.5f),
+    glm::vec3(1.3f, -2.0f, -2.5f),
+    glm::vec3(1.5f,  2.0f, -2.5f),
+    glm::vec3(1.5f,  0.2f, -1.5f),
+    glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
 // 窗口大小
 int windowWidth = 800;
 int windowHeight = 600;
@@ -303,22 +316,6 @@ int main()
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
 
-    // 加载纹理1
-    unsigned int texture1 = loadResource(FileSystem::getPath("resources/container2.png").c_str());
-    objectShader.use();
-    objectShader.setInt("material.diffuse", 0);
-    // 加载纹理2
-    unsigned int texture2 = loadResource(FileSystem::getPath("resources/container2_specular.png").c_str());
-    objectShader.use();
-    objectShader.setInt("material.specular", 1);
-
-    double deltaTime = 0.0f; // 当前帧与上一帧的时间差
-    double lastFrame = glfwGetTime(); // 上一帧的时间
-    double currentFrame = glfwGetTime(); // 当前帧的时间
-
-    // 捕获光标，并捕捉光标位置
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     // 视角矩阵、投影矩阵
     const glm::mat4& view = ourCamera.GetViewMatrix();
     const glm::mat4& proj = ourCamera.GetProjectMatrix();
@@ -330,6 +327,27 @@ int main()
 
     // 物体的模型矩阵
     glm::mat4 objModel(1.0f);
+
+    // 加载纹理1
+    unsigned int texture1 = loadResource(FileSystem::getPath("resources/container2.png").c_str());
+    objectShader.use();
+    objectShader.setInt("material.diffuse", 0);
+    // 加载纹理2
+    unsigned int texture2 = loadResource(FileSystem::getPath("resources/container2_specular.png").c_str());
+    objectShader.use();
+    objectShader.setInt("material.specular", 1);
+    //objectShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+    objectShader.setVec3("light.position", lightPos);
+    objectShader.setFloat("light.constant", 1.0f);
+    objectShader.setFloat("light.linear", 0.09f);
+    objectShader.setFloat("light.quadratic", 0.032f);
+
+    double deltaTime = 0.0f; // 当前帧与上一帧的时间差
+    double lastFrame = glfwGetTime(); // 上一帧的时间
+    double currentFrame = glfwGetTime(); // 当前帧的时间
+
+    // 捕获光标，并捕捉光标位置
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
@@ -351,9 +369,7 @@ int main()
         objectShader.setMat4("view", view);
         objectShader.setMat4("model", objModel);
         objectShader.setMat4("projection", proj);
-        //objectShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
         objectShader.setFloat("material.shininess", 32.0f);
-        objectShader.setVec3("light.position", lightPos);
         objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         objectShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         objectShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
@@ -366,7 +382,16 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model;
+            model = glm::translate(objModel, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            objectShader.setMat4("model", model);
+
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
 
         // 绘制灯
         lightingShader.use();
