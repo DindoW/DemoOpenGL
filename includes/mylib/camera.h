@@ -66,6 +66,11 @@ public:
 		return cameraPos;
 	}
 
+	const glm::vec3& GetDir()
+	{
+		return cameraFront;
+	}
+
 	void SetPos(Camera_Movement move, const float deltaTime)
 	{
 		float cameraSpeed = posSensitivity * deltaTime; // adjust accordingly

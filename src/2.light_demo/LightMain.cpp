@@ -337,10 +337,17 @@ int main()
     objectShader.use();
     objectShader.setInt("material.specular", 1);
     //objectShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-    objectShader.setVec3("light.position", lightPos);
-    objectShader.setFloat("light.constant", 1.0f);
-    objectShader.setFloat("light.linear", 0.09f);
-    objectShader.setFloat("light.quadratic", 0.032f);
+    //objectShader.setVec3("light.position", lightPos);
+    //objectShader.setFloat("light.constant", 1.0f);
+    //objectShader.setFloat("light.linear", 0.09f);
+    //objectShader.setFloat("light.quadratic", 0.032f);
+
+    // 设置光照属性
+    objectShader.setVec3("light.position", ourCamera.GetPos());
+    objectShader.setVec3("light.direction", ourCamera.GetDir());
+    objectShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+    objectShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+    objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
@@ -370,9 +377,9 @@ int main()
         objectShader.setMat4("model", objModel);
         objectShader.setMat4("projection", proj);
         objectShader.setFloat("material.shininess", 32.0f);
-        objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        objectShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-        objectShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        objectShader.setVec3("light.position", ourCamera.GetPos());
+        objectShader.setVec3("light.direction", ourCamera.GetDir());
         objectShader.setVec3("viewPos", ourCamera.GetPos());
 
         glActiveTexture(GL_TEXTURE0);
