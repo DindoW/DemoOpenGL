@@ -11,62 +11,6 @@
 #include <mylib/camera.h>
 #include <mylib/filesystem.h>
 
-// VAO & VBO 数据
-//float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//};
-
-//float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-//
-//    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-//    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-//    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-//    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-//    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-//    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-//
-//     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-//
-//    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-//
-//    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-//     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-//     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-//     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-//};
 
 float vertices[] = {
     // positions          // normals           // texture coords
@@ -113,18 +57,6 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 };
 
-// EBO，注意索引从0开始 
-//unsigned int indices[] = {
-//    0, 1, 2, 2, 3, 0,  // -Z
-//    4, 5, 6, 6, 7, 4,  // +z
-//
-//    5, 1, 2, 2, 6, 5,  // +x
-//    0, 4, 7, 7, 3, 0,  // -x
-//
-//    7, 6, 2, 2, 3, 7,  // +y
-//    0, 1, 5, 5, 4, 0,  // -y
-//};
-
 unsigned int indices[] = {
     0, 1, 2, 3, 4, 5,  // -Z
     6, 7, 8, 9, 10, 11,  // +z
@@ -136,6 +68,7 @@ unsigned int indices[] = {
     30, 31, 32, 33, 34, 35,  // -y
 };
 
+// 木箱位置
 glm::vec3 cubePositions[] = {
     glm::vec3(0.0f,  0.0f,  0.0f),
     glm::vec3(2.0f,  5.0f, -15.0f),
@@ -147,6 +80,14 @@ glm::vec3 cubePositions[] = {
     glm::vec3(1.5f,  2.0f, -2.5f),
     glm::vec3(1.5f,  0.2f, -1.5f),
     glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+// 点光源位置
+glm::vec3 pointLightPositions[] = {
+    glm::vec3(0.7f,  0.2f,  2.0f),
+    glm::vec3(2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f,  2.0f, -12.0f),
+    glm::vec3(0.0f,  0.0f, -3.0f)
 };
 
 // 窗口大小
@@ -310,44 +251,63 @@ int main()
     glBindVertexArray(0);
 
     // 渲染物体用的shader
-    //Shader ourShader(FileSystem::getPath("shaders/shader_2.vs").c_str(), FileSystem::getPath("shaders/shader_2.fs").c_str());
     Shader objectShader(FileSystem::getPath("shaders/shader_2_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
-
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
 
-    // 视角矩阵、投影矩阵
-    const glm::mat4& view = ourCamera.GetViewMatrix();
-    const glm::mat4& proj = ourCamera.GetProjectMatrix();
-
-    // 灯的模型矩阵
-    glm::vec3 lightPos = glm::vec3(1.5f, 1.0f, -0.5f);
-    glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), lightPos);
-    lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-
-    // 物体的模型矩阵
-    glm::mat4 objModel(1.0f);
-
-    // 加载纹理1
+    // 加载纹理
     unsigned int texture1 = loadResource(FileSystem::getPath("resources/container2.png").c_str());
+    unsigned int texture2 = loadResource(FileSystem::getPath("resources/container2_specular.png").c_str());
+
     objectShader.use();
     objectShader.setInt("material.diffuse", 0);
-    // 加载纹理2
-    unsigned int texture2 = loadResource(FileSystem::getPath("resources/container2_specular.png").c_str());
-    objectShader.use();
     objectShader.setInt("material.specular", 1);
-    //objectShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-    //objectShader.setVec3("light.position", lightPos);
-    //objectShader.setFloat("light.constant", 1.0f);
-    //objectShader.setFloat("light.linear", 0.09f);
-    //objectShader.setFloat("light.quadratic", 0.032f);
-
-    // 设置光照属性
-    objectShader.setVec3("light.position", ourCamera.GetPos());
-    objectShader.setVec3("light.direction", ourCamera.GetDir());
-    objectShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-    objectShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-    objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+    objectShader.setFloat("material.shininess", 32.0f);
+    // directLight
+    objectShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    objectShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+    objectShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+    objectShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+    // pointLight
+    objectShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+    objectShader.setFloat("pointLights[0].constant", 1.0f);
+    objectShader.setFloat("pointLights[0].linear", 0.09f);
+    objectShader.setFloat("pointLights[0].quadratic", 0.032f);
+    objectShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+    objectShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+    objectShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+    objectShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+    objectShader.setFloat("pointLights[1].constant", 1.0f);
+    objectShader.setFloat("pointLights[1].linear", 0.09f);
+    objectShader.setFloat("pointLights[1].quadratic", 0.032f);
+    objectShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+    objectShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+    objectShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+    objectShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+    objectShader.setFloat("pointLights[2].constant", 1.0f);
+    objectShader.setFloat("pointLights[2].linear", 0.09f);
+    objectShader.setFloat("pointLights[2].quadratic", 0.032f);
+    objectShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+    objectShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+    objectShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+    objectShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+    objectShader.setFloat("pointLights[3].constant", 1.0f);
+    objectShader.setFloat("pointLights[3].linear", 0.09f);
+    objectShader.setFloat("pointLights[3].quadratic", 0.032f);
+    objectShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+    objectShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+    objectShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+    // spotLight
+    objectShader.setVec3("spotLight.position", ourCamera.GetPos());
+    objectShader.setVec3("spotLight.direction", ourCamera.GetDir());
+    objectShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    objectShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    objectShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    objectShader.setFloat("spotLight.constant", 1.0f);
+    objectShader.setFloat("spotLight.linear", 0.09f);
+    objectShader.setFloat("spotLight.quadratic", 0.032f);
+    objectShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    objectShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
@@ -368,18 +328,20 @@ int main()
 
         processInput(window, deltaTime);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 视角矩阵、投影矩阵、模型矩阵
+        const glm::mat4& view = ourCamera.GetViewMatrix();
+        const glm::mat4& proj = ourCamera.GetProjectMatrix();
+        const glm::mat4 objModel(1.0f);
 
         // 绘制物体
         objectShader.use();
         objectShader.setMat4("view", view);
-        objectShader.setMat4("model", objModel);
         objectShader.setMat4("projection", proj);
-        objectShader.setFloat("material.shininess", 32.0f);
-
-        objectShader.setVec3("light.position", ourCamera.GetPos());
-        objectShader.setVec3("light.direction", ourCamera.GetDir());
+        objectShader.setVec3("spotLight.position", ourCamera.GetPos());
+        objectShader.setVec3("spotLight.direction", ourCamera.GetDir());
         objectShader.setVec3("viewPos", ourCamera.GetPos());
 
         glActiveTexture(GL_TEXTURE0);
@@ -391,23 +353,26 @@ int main()
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
         {
-            glm::mat4 model;
-            model = glm::translate(objModel, cubePositions[i]);
+            glm::mat4 model = glm::translate(objModel, cubePositions[i]);
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             objectShader.setMat4("model", model);
-
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
 
         // 绘制灯
         lightingShader.use();
         lightingShader.setMat4("view", view);
-        lightingShader.setMat4("model", lightModel);
-        lightingShader.setMat4("projection", proj);
+        lightingShader.setMat4("projection", ourCamera.GetProjectMatrix());
 
         glBindVertexArray(lightVAO);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        for (unsigned int i = 0; i < 4; i++)
+        {
+            glm::mat4 lightModel = glm::translate(objModel, pointLightPositions[i]);
+            lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+            lightingShader.setMat4("model", lightModel);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
 
         glfwSwapBuffers(window);
         // 检查是否有触发事件（键盘输入、鼠标）、更新窗口状态
