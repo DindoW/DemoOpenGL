@@ -31,7 +31,7 @@ configure_file(configuration/root_directory.h.in configuration/root_directory.h)
 include_directories(${CMAKE_BINARY_DIR}/configuration)
 
 # 设置库，从源码编译生成库，并加入LIBS
-set(LIBS glfw3)
+set(LIBS glfw3 assimp-vc140-mt)
 add_library(STB_IMAGE "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
 add_library(GLAD "src/glad.c")
@@ -60,6 +60,10 @@ function(create_project_from_sources chapter)
     set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}")
     set_target_properties(${NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}/Debug")
 
+    # copy dlls
+	file(GLOB DLLS "dlls/*.dll")
+    add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} $<TARGET_FILE_DIR:${NAME}>)
+
     # 替换vs环境下的代码路径
     configure_file(${CMAKE_SOURCE_DIR}/configuration/visualstudio.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.vcxproj.user @ONLY)
 endfunction()
@@ -67,6 +71,7 @@ endfunction()
 set(CHAPTERS
     1.start_demo
     2.light_demo
+    3.model_demo
 )
 
 # 为上面定义的章节创建子工程
