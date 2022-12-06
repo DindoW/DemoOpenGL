@@ -53,15 +53,19 @@ void processInput(GLFWwindow* window, const double deltaTime)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    Camera_Movement move = Camera_Movement::none;
+    std::uint8_t move = static_cast<std::uint8_t>(Camera_Movement::none);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        move = Camera_Movement::front;
+        move |= static_cast<std::uint8_t>(Camera_Movement::front);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        move = Camera_Movement::back;
+        move |= static_cast<std::uint8_t>(Camera_Movement::back);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        move = Camera_Movement::left;
+        move |= static_cast<std::uint8_t>(Camera_Movement::left);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        move = Camera_Movement::right;
+        move |= static_cast<std::uint8_t>(Camera_Movement::right);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        move |= static_cast<std::uint8_t>(Camera_Movement::up);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        move |= static_cast<std::uint8_t>(Camera_Movement::down);
 
     ourCamera.SetPos(move, deltaTime);
 }

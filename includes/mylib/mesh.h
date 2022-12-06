@@ -37,6 +37,7 @@ public:
     // 函数
     Mesh(const vector<Vertex>& vertices, const vector<uint>& indices, const vector<Texture>& textures);
     //~Mesh() {
+    // 不能在这里调用，因为只要有一个拷贝对象被析构，则指向同一个VAO的Mesh都用不了了
     //    glDeleteVertexArrays(1, &VAO);
     //    glDeleteBuffers(1, &VBO);
     //    glDeleteBuffers(1, &EBO);

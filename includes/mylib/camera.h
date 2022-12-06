@@ -5,11 +5,13 @@
 
 enum class Camera_Movement : std::uint8_t
 {
-	none,
-	front,
-	back,
-	left,
-	right
+	none = 0,
+	front = 1,
+	back = 2,
+	left = 4,
+	right = 8,
+	up = 16,
+	down = 32,
 };
 
 
@@ -31,7 +33,7 @@ private:
 	float sensitivity = 0.05f;
 
 	// œ‡ª˙º¸≈Ã¡È√Ù∂»
-	float posSensitivity = 1.0f;
+	float posSensitivity = 2.0f;
 
 	// π€≤Ïæÿ’Û
 	glm::mat4 viewMatrix;
@@ -71,25 +73,39 @@ public:
 		return cameraFront;
 	}
 
-	void SetPos(Camera_Movement move, const float deltaTime)
+	void SetPos(std::uint8_t move, const float deltaTime)
 	{
 		float cameraSpeed = posSensitivity * deltaTime; // adjust accordingly
-		switch (move)
-		{
-		case Camera_Movement::front:
-			cameraPos += cameraSpeed * cameraFront;
-			break;
-		case Camera_Movement::back:
-			cameraPos -= cameraSpeed * cameraFront;
-			break;
-		case Camera_Movement::left:
-			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-			break;
-		case Camera_Movement::right:
-			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-			break;
-		default:
-			return;
+
+		std::uint8_t moveType = 1;
+		while (move) {
+			if (move & 1) {
+				switch (Camera_Movement(moveType))
+				{
+				case Camera_Movement::front:
+					cameraPos += cameraSpeed * cameraFront;
+					break;
+				case Camera_Movement::back:
+					cameraPos -= cameraSpeed * cameraFront;
+					break;
+				case Camera_Movement::left:
+					cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+					break;
+				case Camera_Movement::right:
+					cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+					break;
+				case Camera_Movement::up:
+					cameraPos += cameraSpeed * cameraUp;
+					break;
+				case Camera_Movement::down:
+					cameraPos -= cameraSpeed * cameraUp;
+					break;
+				default:
+					break;
+				}
+			}
+			moveType = moveType << 1;
+			move = move >> 1;
 		}
 		_UpdateViewMatrix();
 	}
