@@ -207,7 +207,7 @@ int run()
     stbi_image_free(data);
 
     ourShader.use();
-    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+    glUniform1i(glGetUniformLocation(ourShader.mID, "texture1"), 0);
     ourShader.setInt("texture2", 1);
 
     // 设置模型矩阵、视角矩阵、投影矩阵
@@ -244,7 +244,7 @@ int run()
         ourShader.use();
 
         view = ourCamera.GetViewMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.mID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
@@ -252,14 +252,14 @@ int run()
             model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             model = glm::rotate(model, glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
-            glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(ourShader.mID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
 
         projection = ourCamera.GetProjectMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.mID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -286,15 +286,19 @@ void processInput(GLFWwindow* window, const float deltaTime)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    Camera_Movement move = Camera_Movement::none;
+    std::uint8_t move = static_cast<std::uint8_t>(Camera_Movement::none);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        move = Camera_Movement::front;
+        move |= static_cast<std::uint8_t>(Camera_Movement::front);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        move = Camera_Movement::back;
+        move |= static_cast<std::uint8_t>(Camera_Movement::back);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        move = Camera_Movement::left;
+        move |= static_cast<std::uint8_t>(Camera_Movement::left);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        move = Camera_Movement::right;
+        move |= static_cast<std::uint8_t>(Camera_Movement::right);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        move |= static_cast<std::uint8_t>(Camera_Movement::up);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        move |= static_cast<std::uint8_t>(Camera_Movement::down);
 
     ourCamera.SetPos(move, deltaTime);
 }

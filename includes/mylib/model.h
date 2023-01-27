@@ -60,7 +60,9 @@ class Model
 {
 public:
     Model(const char* path) { _loadModel(path); }
-    void Draw(const Shader &shader);
+
+    void SetLightParameters(Shader& objectShader, LightParameters& lightParams);
+    void Draw(Shader &shader, ModelRenderParam& modelRenderParam);
 
 private:
     map<string, Texture> mStoredTextures;  // 存放所有加载过的纹理
@@ -73,8 +75,53 @@ private:
     vector<Texture> _loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 };
 
-void Model::Draw(const Shader &shader)
+void Model::SetLightParameters(Shader& objectShader, LightParameters& lightParams) {
+    objectShader.use();
+    objectShader.setInt("material.diffuse", lightParams.mMaterial.mDiffuse);
+    objectShader.setInt("material.specular", lightParams.mMaterial.mSpecular);
+    objectShader.setFloat("material.shininess", lightParams.mMaterial.mShininess);
+    
+    objectShader.setVec3("dirLight.direction", lightParams.mDirectLight.mDirection);
+    objectShader.setVec3("dirLight.ambient", lightParams.mDirectLight.mAmbient);
+    objectShader.setVec3("dirLight.diffuse", lightParams.mDirectLight.mDiffuse);
+    objectShader.setVec3("dirLight.specular", lightParams.mDirectLight.mSpecular);
+    
+    objectShader.setVec3("spotLight.position", lightParams.mSpotLight.mPosition);
+    objectShader.setVec3("spotLight.direction", lightParams.mSpotLight.mDirection);
+    objectShader.setVec3("spotLight.ambient", lightParams.mSpotLight.mAmbient);
+    objectShader.setVec3("spotLight.diffuse", lightParams.mSpotLight.mDiffuse);
+    objectShader.setVec3("spotLight.specular", lightParams.mSpotLight.mSpecular);
+    objectShader.setFloat("spotLight.constant", lightParams.mSpotLight.mConstant);
+    objectShader.setFloat("spotLight.linear", lightParams.mSpotLight.mLinear);
+    objectShader.setFloat("spotLight.quadratic", lightParams.mSpotLight.mQuadratic);
+    objectShader.setFloat("spotLight.cutOff", lightParams.mSpotLight.mCutOff);
+    objectShader.setFloat("spotLight.outerCutOff", lightParams.mSpotLight.mOuterCutOff);
+
+    for (int i = 0; i < lightParams.mPointLights.size(); i++) {
+        auto&& pointLight = lightParams.mPointLights[i];
+        std::string pointName = "pointLights[" + to_string(i) + "]";
+        objectShader.setVec3(pointName + ".position", pointLight.mPosition);
+        objectShader.setFloat(pointName + ".constant", pointLight.mConstant);
+        objectShader.setFloat(pointName + ".linear", pointLight.mLinear);
+        objectShader.setFloat(pointName + ".quadratic", pointLight.mQuadratic);
+        objectShader.setVec3(pointName + ".ambient", pointLight.mAmbient);
+        objectShader.setVec3(pointName + ".diffuse", pointLight.mDiffuse);
+        objectShader.setVec3(pointName + ".specular", pointLight.mSpecular);
+    }
+    objectShader.setInt("pointLightCount", lightParams.mPointLights.size());
+}
+
+void Model::Draw(Shader &shader, ModelRenderParam& modelRenderParam)
 {
+    // 绘制物体
+    shader.use();
+    shader.setMat4("view", modelRenderParam.mViewMat);
+    shader.setMat4("projection", modelRenderParam.mProjMat);
+    shader.setVec3("viewPos", modelRenderParam.mCameraPos);
+    shader.setVec3("spotLight.position", modelRenderParam.mCameraPos);
+    shader.setVec3("spotLight.direction", modelRenderParam.mCameraDir);
+    shader.setMat4("model", modelRenderParam.mModelTransMat);
+
     for (Mesh mesh : mMeshes)
     {
         mesh.Draw(shader);

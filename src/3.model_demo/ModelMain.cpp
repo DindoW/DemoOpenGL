@@ -24,16 +24,37 @@ double lastY = static_cast<double>(windowHeight / 2);
 bool firstMouse = true;
 
 // 模型位置
-glm::vec3 modelPositions[] = {
-    glm::vec3(0.0f,  0.0f,  -5.0f)
-};
+glm::vec3 modelPosition(0.0f,  0.0f,  -5.0f);
 
 // 点光源位置
 glm::vec3 pointLightPositions[] = {
-    glm::vec3(0.7f,  0.2f,  2.0f),
-    glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f,  2.0f, -12.0f),
-    glm::vec3(0.0f,  0.0f, -3.0f)
+    glm::vec3(-4.f,  12.0f,  -5.0f),
+    glm::vec3(4.0f, 12.0f, -5.0f),
+    glm::vec3(-4.0f,  5.0f, -7.0f),
+    glm::vec3(4.0f,  5.0f, -3.0f)
+};
+
+float vertices[] = {
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+     -1.0f,  1.0f, -1.0f,
+
+    -1.0f,  -1.0f, 1.0f,
+    1.0f,  -1.0f, 1.0f,
+    1.0f,  1.0f, 1.0f,
+    -1.0f,  1.0f, 1.0f,
+};
+
+unsigned int indices[] = {
+    0, 1, 2, 2, 3, 0,  // -Z
+    5, 4, 7, 7, 6, 5,  // +z
+
+    1, 5, 6, 6, 2, 1,  // +x
+    4, 0, 3, 3, 7, 4,  // -x
+
+    6, 7, 3, 3, 2, 6,  // +y
+    0, 4, 5, 5, 1, 0,  // -y
 };
 
 // 全局相机
@@ -123,10 +144,12 @@ int main()
     glGenBuffers(1, &lightVBO);
     glGenBuffers(1, &lightEBO);
     glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO); // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);  // 设置灯立方体的顶点属性
+    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -135,55 +158,17 @@ int main()
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
 
-    objectShader.use();
-    objectShader.setInt("material.diffuse", 0);
-    objectShader.setInt("material.specular", 1);
-    objectShader.setFloat("material.shininess", 32.0f);
-    // directLight
-    objectShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    objectShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-    objectShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-    objectShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-    // pointLight
-    objectShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-    objectShader.setFloat("pointLights[0].constant", 1.0f);
-    objectShader.setFloat("pointLights[0].linear", 0.09f);
-    objectShader.setFloat("pointLights[0].quadratic", 0.032f);
-    objectShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-    objectShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-    objectShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-    objectShader.setVec3("pointLights[1].position", pointLightPositions[1]);
-    objectShader.setFloat("pointLights[1].constant", 1.0f);
-    objectShader.setFloat("pointLights[1].linear", 0.09f);
-    objectShader.setFloat("pointLights[1].quadratic", 0.032f);
-    objectShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-    objectShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-    objectShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-    objectShader.setVec3("pointLights[2].position", pointLightPositions[2]);
-    objectShader.setFloat("pointLights[2].constant", 1.0f);
-    objectShader.setFloat("pointLights[2].linear", 0.09f);
-    objectShader.setFloat("pointLights[2].quadratic", 0.032f);
-    objectShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-    objectShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-    objectShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-    objectShader.setVec3("pointLights[3].position", pointLightPositions[3]);
-    objectShader.setFloat("pointLights[3].constant", 1.0f);
-    objectShader.setFloat("pointLights[3].linear", 0.09f);
-    objectShader.setFloat("pointLights[3].quadratic", 0.032f);
-    objectShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-    objectShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-    objectShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-    // spotLight
-    objectShader.setVec3("spotLight.position", ourCamera.GetPos());
-    objectShader.setVec3("spotLight.direction", ourCamera.GetDir());
-    objectShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-    objectShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-    objectShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-    objectShader.setFloat("spotLight.constant", 1.0f);
-    objectShader.setFloat("spotLight.linear", 0.09f);
-    objectShader.setFloat("spotLight.quadratic", 0.032f);
-    objectShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-    objectShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+    LightParameters::MaterialParam lightMaterial(0, 1, 32.0f);
+    LightParameters::DirectLight directLight(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.05f), glm::vec3(3.5f), glm::vec3(0.5f));
+    LightParameters::SpotLight spotLight(glm::vec3(0), glm::vec3(0), glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f, 0.5f, 0.0f), 1.0f, 0.09f, 0.032f, glm::cos(glm::radians(12.5f)), glm::cos(glm::radians(15.0f)));
+    std::vector<LightParameters::PointLight> pointLights;
+    for (auto&& pos : pointLightPositions) {
+        pointLights.emplace_back(pos);
+    }
+
+    LightParameters allLightParams(lightMaterial, directLight, pointLights, spotLight);
+    
+    myModel.SetLightParameters(objectShader, allLightParams);
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
@@ -207,35 +192,18 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 视角矩阵、投影矩阵、模型矩阵
-        const glm::mat4& view = ourCamera.GetViewMatrix();
-        const glm::mat4& proj = ourCamera.GetProjectMatrix();
-        const glm::mat4 objModel(1.0f);
-
-        // 绘制物体
-        objectShader.use();
-        objectShader.setMat4("view", view);
-        objectShader.setMat4("projection", proj);
-        objectShader.setVec3("spotLight.position", ourCamera.GetPos());
-        objectShader.setVec3("spotLight.direction", ourCamera.GetDir());
-        objectShader.setVec3("viewPos", ourCamera.GetPos());
-
-        for (unsigned int i = 0; i < 1; i++)
-        {
-            glm::mat4 model = glm::translate(objModel, modelPositions[i]);
-            objectShader.setMat4("model", model);
-            myModel.Draw(objectShader);
-        }
+        // 绘制模型
+        ModelRenderParam modelRenderParam(ourCamera, modelPosition);
+        myModel.Draw(objectShader, modelRenderParam);
 
         // 绘制灯
         lightingShader.use();
-        lightingShader.setMat4("view", view);
+        lightingShader.setMat4("view", ourCamera.GetViewMatrix());
         lightingShader.setMat4("projection", ourCamera.GetProjectMatrix());
 
         glBindVertexArray(lightVAO);
-        for (unsigned int i = 0; i < 4; i++)
-        {
-            glm::mat4 lightModel = glm::translate(objModel, pointLightPositions[i]);
+        for (auto&& pos : pointLightPositions) {
+            glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), pos);
             lightModel = glm::scale(lightModel, glm::vec3(0.2f));
             lightingShader.setMat4("model", lightModel);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
