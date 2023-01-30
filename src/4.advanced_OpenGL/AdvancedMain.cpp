@@ -135,28 +135,9 @@ int main()
         return -1;
     }
 
-    // 加载模型
-    Model myModel(FileSystem::getPath("resources/models/Nanosuit/nanosuit.obj").c_str());
-
-    // 单独为光源立方体设置一个VAO
-    unsigned int lightVAO, lightVBO, lightEBO;
-    glGenVertexArrays(1, &lightVAO);
-    glGenBuffers(1, &lightVBO);
-    glGenBuffers(1, &lightEBO);
-    glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
     // 渲染物体用的shader
     Shader objectShader(FileSystem::getPath("shaders/shader_2_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
-    // 灯光shader
-    Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
+    Model cubeModel(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
 
     LightParameters::MaterialParam lightMaterial(0, 1, 32.0f);
     LightParameters::DirectLight directLight(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.05f), glm::vec3(3.5f), glm::vec3(0.5f));
@@ -165,10 +146,14 @@ int main()
     for (auto&& pos : pointLightPositions) {
         pointLights.emplace_back(pos);
     }
-
     LightParameters allLightParams(lightMaterial, directLight, pointLights, spotLight);
-    
-    myModel.SetLightParameters(objectShader, allLightParams);
+
+    cubeModel.SetLightParameters(objectShader, allLightParams);
+
+    // 灯光shader
+    Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
+    Model lightCube(Mesh::CreateCube(1.0f, ""));
+
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
@@ -194,30 +179,18 @@ int main()
 
         // 绘制模型
         ModelRenderParam modelRenderParam(ourCamera, modelPosition);
-        myModel.UpdateLightParam(objectShader, modelRenderParam);
-        myModel.Draw(objectShader, modelRenderParam);
+        cubeModel.UpdateLightParam(objectShader, modelRenderParam);
+        cubeModel.Draw(objectShader, modelRenderParam);
 
         // 绘制灯
-        lightingShader.use();
-        lightingShader.setMat4("view", ourCamera.GetViewMatrix());
-        lightingShader.setMat4("projection", ourCamera.GetProjectMatrix());
-
-        glBindVertexArray(lightVAO);
-        for (auto&& pos : pointLightPositions) {
-            glm::mat4 lightModel = glm::translate(glm::mat4(1.0f), pos);
-            lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-            lightingShader.setMat4("model", lightModel);
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        }
+        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), pointLightPositions[0]);
+        lightCube.Draw(lightingShader, modelRenderParam);
 
         glfwSwapBuffers(window);
         // 检查是否有触发事件（键盘输入、鼠标）、更新窗口状态
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &lightVAO);
-    glDeleteBuffers(1, &lightVBO);
-    glDeleteBuffers(1, &lightEBO);
     glfwTerminate();
     return 0;
 }

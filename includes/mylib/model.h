@@ -10,58 +10,22 @@
 #include <map>
 
 
-uint TextureFromFile(const char* fileName, const char* filePath)
-{
-    uint texture;
-    glGenTextures(1, &texture);
-
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    string resourceLocation = string(filePath) + '/' + string(fileName);
-    uint8* data = stbi_load(resourceLocation.c_str(), &width, &height, &nrChannels, 0);
-
-    if (data)
-    {
-        GLenum format;
-        switch (nrChannels)
-        {
-        case 1:
-            format = GL_RED;
-            break;
-        case 3:
-            format = GL_RGB;
-            break;
-        case 4:
-            format = GL_RGBA;
-            break;
-        default:
-            cout << "Error on channels: " << nrChannels << endl;
-            break;
-        }
-
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // 为当前绑定的纹理对象设置环绕、过滤方式
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    else {
-        cout << "Failed to load texture" << endl;
-    }
-    stbi_image_free(data);
-    return texture;
-}
-
 class Model
 {
 public:
+    enum class SimpleModel : uint8
+    {
+        cube = 0,
+    };
+
+
     Model(const char* path) { _loadModel(path); }
+    Model(Mesh& mesh) {
+        mMeshes.emplace_back(std::move(mesh));
+    }
 
     void SetLightParameters(Shader& objectShader, LightParameters& lightParams);
+    void UpdateLightParam(Shader& objectShader, ModelRenderParam& modelRenderParam);
     void Draw(Shader &shader, ModelRenderParam& modelRenderParam);
 
 private:
@@ -111,15 +75,18 @@ void Model::SetLightParameters(Shader& objectShader, LightParameters& lightParam
     objectShader.setInt("pointLightCount", lightParams.mPointLights.size());
 }
 
+void Model::UpdateLightParam(Shader& objectShader, ModelRenderParam& modelRenderParam) {
+    objectShader.setVec3("viewPos", modelRenderParam.mCameraPos);
+    objectShader.setVec3("spotLight.position", modelRenderParam.mCameraPos);
+    objectShader.setVec3("spotLight.direction", modelRenderParam.mCameraDir);
+}
+
 void Model::Draw(Shader &shader, ModelRenderParam& modelRenderParam)
 {
     // 绘制物体
     shader.use();
     shader.setMat4("view", modelRenderParam.mViewMat);
     shader.setMat4("projection", modelRenderParam.mProjMat);
-    shader.setVec3("viewPos", modelRenderParam.mCameraPos);
-    shader.setVec3("spotLight.position", modelRenderParam.mCameraPos);
-    shader.setVec3("spotLight.direction", modelRenderParam.mCameraDir);
     shader.setMat4("model", modelRenderParam.mModelTransMat);
 
     for (Mesh mesh : mMeshes)

@@ -11,37 +11,105 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
 using namespace std;
 using uint = unsigned int;
 using uint8 = unsigned char;
+
 
 struct Vertex {
     glm::vec3 Position;
     glm::vec3 Normal;
     glm::vec2 TexCoords;
+
+    Vertex() = default;
+    Vertex(float posX, float posY, float posZ, float normX, float normY, float normZ, float texX, float texY)
+        : Position(posX, posY, posZ),
+        Normal(normX, normY, normZ),
+        TexCoords(texX, texY) {
+
+    }
 };
+
 
 struct Texture {
     uint id;
     string type;
     aiString path;  // 我们储存纹理的路径用于与其它纹理进行比较
+
+    Texture() = default;
+    Texture(uint tID, string tType, string tPath) :
+        id(tID), type(tType), path(tPath) {
+    }
 };
+
+
+uint TextureFromFile(const char* fileName, const char* filePath = nullptr)
+{
+    uint texture;
+    glGenTextures(1, &texture);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    string resourceLocation;
+    if (filePath) {
+        resourceLocation = string(filePath) + '/' + string(fileName);
+    }
+    else {
+        resourceLocation = string(fileName);
+    }
+     
+    uint8* data = stbi_load(resourceLocation.c_str(), &width, &height, &nrChannels, 0);
+
+    if (data)
+    {
+        GLenum format;
+        switch (nrChannels)
+        {
+        case 1:
+            format = GL_RED;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        default:
+            cout << "Error on channels: " << nrChannels << endl;
+            break;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // 为当前绑定的纹理对象设置环绕、过滤方式
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else {
+        cout << "Failed to load texture" << endl;
+    }
+    stbi_image_free(data);
+    return texture;
+}
+
 
 class Mesh {
 public:
+    static Mesh CreateCube(float lengthOfSide, const string& texturePath);
+
     // 网格数据
     vector<Vertex> mVertices;
     vector<unsigned int> mIndices;
     vector<Texture> mTextures;
 
     // 函数
+    Mesh() = default;
     Mesh(const vector<Vertex>& vertices, const vector<uint>& indices, const vector<Texture>& textures);
-    //~Mesh() {
-    // 不能在这里调用，因为只要有一个拷贝对象被析构，则指向同一个VAO的Mesh都用不了了
-    //    glDeleteVertexArrays(1, &VAO);
-    //    glDeleteBuffers(1, &VBO);
-    //    glDeleteBuffers(1, &EBO);
-    //}
     void Draw(const Shader &shader);
 private:
     // 渲染数据
@@ -49,6 +117,69 @@ private:
     // 函数
     void _setupMesh();
 };
+
+Mesh Mesh::CreateCube(float lengthOfSide, const string& texturePath) {
+    if (lengthOfSide <= 0.0f) {
+        return Mesh();
+    }
+    float length = lengthOfSide * 0.5f;
+    vector<Vertex> vertices = {
+        // -Z
+        Vertex(-length, -length, -length,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f),
+        Vertex(length, -length, -length,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f),
+        Vertex(length,  length, -length,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f),
+        Vertex(-length,  length, -length,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f),
+
+        // +Z
+        Vertex(-length, -length,  length,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f),
+        Vertex(length, -length,  length,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f),
+        Vertex(length,  length,  length,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f),
+        Vertex(-length,  length,  length,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f),
+
+        // -X
+        Vertex(-length,  length,  length, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f),
+        Vertex(-length,  length, -length, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f),
+        Vertex(-length, -length, -length, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f),
+        Vertex(-length, -length,  length, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f),
+
+        // +X
+        Vertex(length,  length,  length,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f),
+        Vertex(length,  length, -length,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f),
+        Vertex(length, -length, -length,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f),
+        Vertex(length, -length,  length,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f),
+
+        // -Y
+        Vertex(-length, -length, -length,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f),
+        Vertex(length, -length, -length,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f),
+        Vertex(length, -length,  length,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f),
+        Vertex(-length, -length,  length,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f),
+
+        // +Y
+        Vertex(-length,  length, -length,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f),
+        Vertex(length,  length, -length,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f),
+        Vertex(length,  length,  length,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f),
+        Vertex(-length,  length,  length,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f),
+    };
+
+    vector<uint> indices = {
+        0,  1,  2,  2,  3,  0,  // -Z
+        4,  5,  6,  6,  7,  4,  // +Z
+
+        8,  9,  10, 10, 11, 8,  // -X
+        12, 13, 14, 14, 15, 12, // +X
+
+        16, 17, 18, 18, 19, 16, // -Y
+        20, 21, 22, 22, 23, 20, // +Y
+    };
+
+    vector<Texture> textures;
+
+    if (texturePath.length() > 0) {
+        textures.emplace_back(TextureFromFile(texturePath.c_str()), "texture_diffuse", texturePath.c_str());
+    }
+
+    return Mesh(vertices, indices, textures);
+}
 
 Mesh::Mesh(const vector<Vertex> &vertices, const vector<uint> &indices, const vector<Texture> &textures):
     mVertices(vertices),
