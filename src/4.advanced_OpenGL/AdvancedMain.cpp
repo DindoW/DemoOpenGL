@@ -23,40 +23,6 @@ double lastX = static_cast<double>(windowWidth / 2);
 double lastY = static_cast<double>(windowHeight / 2);
 bool firstMouse = true;
 
-// 模型位置
-glm::vec3 modelPosition(0.0f,  0.0f,  -5.0f);
-
-// 点光源位置
-glm::vec3 pointLightPositions[] = {
-    glm::vec3(-4.f,  12.0f,  -5.0f),
-    glm::vec3(4.0f, 12.0f, -5.0f),
-    glm::vec3(-4.0f,  5.0f, -7.0f),
-    glm::vec3(4.0f,  5.0f, -3.0f)
-};
-
-float vertices[] = {
-    -1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-     -1.0f,  1.0f, -1.0f,
-
-    -1.0f,  -1.0f, 1.0f,
-    1.0f,  -1.0f, 1.0f,
-    1.0f,  1.0f, 1.0f,
-    -1.0f,  1.0f, 1.0f,
-};
-
-unsigned int indices[] = {
-    0, 1, 2, 2, 3, 0,  // -Z
-    5, 4, 7, 7, 6, 5,  // +z
-
-    1, 5, 6, 6, 2, 1,  // +x
-    4, 0, 3, 3, 7, 4,  // -x
-
-    6, 7, 3, 3, 2, 6,  // +y
-    0, 4, 5, 5, 1, 0,  // -y
-};
-
 // 全局相机
 Camera ourCamera;
 
@@ -135,6 +101,10 @@ int main()
         return -1;
     }
 
+    glm::vec3 modelPosition(0.0f, 0.0f, -5.0f); // 模型位置
+    glm::vec3 planePosition(0.0f, -1.5f, 0.0f); // 地板位置
+    glm::vec3 lightPosition(4.0f, 5.0f, -3.0f);  // 点光源位置
+
     // 渲染物体用的shader
     Shader objectShader(FileSystem::getPath("shaders/shader_2_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
     Model cubeModel(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
@@ -143,16 +113,17 @@ int main()
     LightParameters::DirectLight directLight(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.05f), glm::vec3(3.5f), glm::vec3(0.5f));
     LightParameters::SpotLight spotLight(glm::vec3(0), glm::vec3(0), glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f, 0.5f, 0.0f), 1.0f, 0.09f, 0.032f, glm::cos(glm::radians(12.5f)), glm::cos(glm::radians(15.0f)));
     std::vector<LightParameters::PointLight> pointLights;
-    for (auto&& pos : pointLightPositions) {
-        pointLights.emplace_back(pos);
-    }
+    pointLights.emplace_back(lightPosition);
     LightParameters allLightParams(lightMaterial, directLight, pointLights, spotLight);
 
     cubeModel.SetLightParameters(objectShader, allLightParams);
 
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
-    Model lightCube(Mesh::CreateCube(1.0f, ""));
+    Model lightCube(Mesh::CreateCube(0.5f, ""));
+
+    // 地板shader
+    Model plane(Mesh::CreatePlane(100.0f, glm::vec3(0, 1, 0), FileSystem::getPath("resources/metal.png").c_str()));
 
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
@@ -182,8 +153,12 @@ int main()
         cubeModel.UpdateLightParam(objectShader, modelRenderParam);
         cubeModel.Draw(objectShader, modelRenderParam);
 
+        // 绘制地板
+        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), planePosition); // *glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        plane.Draw(objectShader, modelRenderParam);
+
         // 绘制灯
-        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), pointLightPositions[0]);
+        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), lightPosition);
         lightCube.Draw(lightingShader, modelRenderParam);
 
         glfwSwapBuffers(window);

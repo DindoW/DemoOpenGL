@@ -101,6 +101,7 @@ uint TextureFromFile(const char* fileName, const char* filePath = nullptr)
 class Mesh {
 public:
     static Mesh CreateCube(float lengthOfSide, const string& texturePath);
+    static Mesh CreatePlane(float lengthOfSide, glm::vec3& norm, const string& texturePath);
 
     // Íø¸ñÊý¾Ý
     vector<Vertex> mVertices;
@@ -170,6 +171,40 @@ Mesh Mesh::CreateCube(float lengthOfSide, const string& texturePath) {
 
         16, 17, 18, 18, 19, 16, // -Y
         20, 21, 22, 22, 23, 20, // +Y
+    };
+
+    vector<Texture> textures;
+
+    if (texturePath.length() > 0) {
+        textures.emplace_back(TextureFromFile(texturePath.c_str()), "texture_diffuse", texturePath.c_str());
+    }
+
+    return Mesh(vertices, indices, textures);
+}
+
+Mesh Mesh::CreatePlane(float lengthOfSide, glm::vec3& norm, const string& texturePath) {
+    if (lengthOfSide <= 0.0f) {
+        return Mesh();
+    }
+    float length = lengthOfSide * 0.5f;
+    vector<Vertex> vertices = {
+        // Z
+        Vertex(-length, -length, 0,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f),
+        Vertex(length, -length, 0,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f),
+        Vertex(length,  length, 0,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f),
+        Vertex(-length,  length, 0,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f),
+    };
+
+    glm::vec3 zNorm(0.0f, 0.0f, -1.0f);
+    glm::mat4 mat = glm::lookAt(norm, glm::vec3(0), glm::cross(zNorm, norm));
+    for (auto&& vertex : vertices) {
+        vertex.Position = glm::vec4(vertex.Position, 1.0f) * mat;
+        vertex.Normal = norm;
+    }
+
+
+    vector<uint> indices = {
+        0,  1,  2,  2,  3,  0,  // Z
     };
 
     vector<Texture> textures;
