@@ -101,13 +101,15 @@ int main()
         return -1;
     }
 
-    glm::vec3 modelPosition(0.0f, 0.0f, -5.0f); // 模型位置
+    glm::vec3 model1Position(0.0f, 0.01f, -5.0f); // 模型1位置 抬高一点防止深度冲突
+    glm::vec3 model2Position(3.0f, 0.0f, -9.0f); // 模型2位置
     glm::vec3 planePosition(0.0f, -1.5f, 0.0f); // 地板位置
     glm::vec3 lightPosition(4.0f, 5.0f, -3.0f);  // 点光源位置
 
     // 渲染物体用的shader
-    Shader objectShader(FileSystem::getPath("shaders/shader_2_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
-    Model cubeModel(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
+    Shader objectShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj.fs").c_str());
+    Model cubeModel1(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
+    Model cubeModel2(cubeModel1);
 
     LightParameters::MaterialParam lightMaterial(0, 1, 32.0f);
     LightParameters::DirectLight directLight(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.05f), glm::vec3(3.5f), glm::vec3(0.5f));
@@ -116,7 +118,9 @@ int main()
     pointLights.emplace_back(lightPosition);
     LightParameters allLightParams(lightMaterial, directLight, pointLights, spotLight);
 
-    cubeModel.SetLightParameters(objectShader, allLightParams);
+    // 给待渲染obj设置光照参数
+    cubeModel1.SetLightParameters(objectShader, allLightParams);
+    cubeModel2.SetLightParameters(objectShader, allLightParams);
 
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
@@ -135,6 +139,7 @@ int main()
 
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
@@ -149,9 +154,12 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 绘制模型
-        ModelRenderParam modelRenderParam(ourCamera, modelPosition);
-        cubeModel.UpdateLightParam(objectShader, modelRenderParam);
-        cubeModel.Draw(objectShader, modelRenderParam);
+        ModelRenderParam modelRenderParam(ourCamera, model1Position);
+        cubeModel1.UpdateLightParam(objectShader, modelRenderParam);
+        cubeModel1.Draw(objectShader, modelRenderParam);
+        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), model2Position);
+        cubeModel2.UpdateLightParam(objectShader, modelRenderParam);
+        cubeModel2.Draw(objectShader, modelRenderParam);
 
         // 绘制地板
         modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), planePosition); // *glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
