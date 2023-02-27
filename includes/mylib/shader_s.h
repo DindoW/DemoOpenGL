@@ -116,12 +116,20 @@ public:
     glm::vec3 mCameraPos;
     glm::vec3 mCameraDir;
 
-    ModelRenderParam(Camera& camera, glm::vec3& modelPos) {
+    ModelRenderParam(Camera& camera) {
         mViewMat = camera.GetViewMatrix();
         mProjMat = camera.GetProjectMatrix();
-        mModelTransMat = glm::translate(glm::mat4(1.0f), modelPos);
+        mModelTransMat = glm::mat4(1.0f);
         mCameraPos = camera.GetPos();
         mCameraDir = camera.GetDir();
+    }
+
+    void SetModelPosition(glm::vec3& modelPos) {
+        mModelTransMat = glm::translate(glm::mat4(1.0f), modelPos);
+    }
+
+    void SetModelScale(float scale) {
+        mModelTransMat = glm::scale(mModelTransMat, glm::vec3(scale));
     }
 };
 

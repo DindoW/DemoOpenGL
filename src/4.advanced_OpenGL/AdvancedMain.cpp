@@ -107,7 +107,9 @@ int main()
     glm::vec3 lightPosition(4.0f, 5.0f, -3.0f);  // 点光源位置
 
     // 渲染物体用的shader
-    Shader objectShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj.fs").c_str());
+    Shader objectShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
+    // 渲染物体边框用地shader
+    Shader outlineShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj_1.fs").c_str());
     Model cubeModel1(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
     Model cubeModel2(cubeModel1);
 
@@ -141,6 +143,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    // 允许模板测试
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
     {
@@ -151,22 +157,44 @@ int main()
         processInput(window, deltaTime);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glStencilMask(0xFF);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        // 绘制模型
-        ModelRenderParam modelRenderParam(ourCamera, model1Position);
-        cubeModel1.UpdateLightParam(objectShader, modelRenderParam);
-        cubeModel1.Draw(objectShader, modelRenderParam);
-        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), model2Position);
-        cubeModel2.UpdateLightParam(objectShader, modelRenderParam);
-        cubeModel2.Draw(objectShader, modelRenderParam);
+        ModelRenderParam modelRenderParam(ourCamera);
 
         // 绘制地板
-        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), planePosition); // *glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        glStencilMask(0x00);
+        modelRenderParam.SetModelPosition(planePosition);
         plane.Draw(objectShader, modelRenderParam);
 
+        // 绘制模型1
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+        glClear(GL_STENCIL_BUFFER_BIT); // 需要在开启写入后才能清空
+        modelRenderParam.SetModelPosition(model1Position);
+        cubeModel1.UpdateLightParam(objectShader, modelRenderParam);
+        cubeModel1.Draw(objectShader, modelRenderParam);
+        // 绘制模型1边框
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        modelRenderParam.SetModelScale(1.05);
+        cubeModel1.Draw(outlineShader, modelRenderParam);
+
+        // 绘制模型2
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+        glClear(GL_STENCIL_BUFFER_BIT);
+        modelRenderParam.SetModelPosition(model2Position);
+        cubeModel2.UpdateLightParam(objectShader, modelRenderParam);
+        cubeModel2.Draw(objectShader, modelRenderParam);
+        // 绘制模型2边框
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        modelRenderParam.SetModelScale(1.05);
+        cubeModel2.Draw(outlineShader, modelRenderParam);
+
         // 绘制灯
-        modelRenderParam.mModelTransMat = glm::translate(glm::mat4(1.0f), lightPosition);
+        modelRenderParam.SetModelPosition(lightPosition);
         lightCube.Draw(lightingShader, modelRenderParam);
 
         glfwSwapBuffers(window);
