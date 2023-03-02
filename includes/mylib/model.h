@@ -13,12 +13,6 @@
 class Model
 {
 public:
-    enum class SimpleModel : uint8
-    {
-        cube = 0,
-    };
-
-
     Model(const char* path) { _loadModel(path); }
     Model(Mesh& mesh) {
         mMeshes.emplace_back(std::move(mesh));

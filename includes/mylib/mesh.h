@@ -63,7 +63,7 @@ uint TextureFromFile(const char* fileName, const char* filePath = nullptr)
 
     if (data)
     {
-        GLenum format;
+        GLenum format = GL_ZERO;
         switch (nrChannels)
         {
         case 1:

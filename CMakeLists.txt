@@ -72,7 +72,8 @@ set(CHAPTERS
     1.start_demo
     2.light_demo
     3.model_demo
-    4.advanced_OpenGL
+    4_1.stencil_demo
+    4_2.blend_demo
 )
 
 # 为上面定义的章节创建子工程
