@@ -85,8 +85,8 @@ uint TextureFromFile(const char* fileName, const char* filePath = nullptr)
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // 为当前绑定的纹理对象设置环绕、过滤方式
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
@@ -186,6 +186,7 @@ Mesh Mesh::CreatePlane(float lengthOfSide, glm::vec3& norm, const string& textur
     if (lengthOfSide <= 0.0f) {
         return Mesh();
     }
+    glm::vec3 normal = glm::normalize(norm);
     float length = lengthOfSide * 0.5f;
     vector<Vertex> vertices = {
         // Z
@@ -195,13 +196,17 @@ Mesh Mesh::CreatePlane(float lengthOfSide, glm::vec3& norm, const string& textur
         Vertex(-length,  length, 0,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f),
     };
 
-    glm::vec3 zNorm(0.0f, 0.0f, -1.0f);
-    glm::mat4 mat = glm::lookAt(norm, glm::vec3(0), glm::cross(zNorm, norm));
-    for (auto&& vertex : vertices) {
-        vertex.Position = glm::vec4(vertex.Position, 1.0f) * mat;
-        vertex.Normal = norm;
-    }
+    glm::vec3 zNorm(0.0f, 0.0f, 1.0f);
+    glm::vec3 axis = -glm::cross(zNorm, normal);
+    float cosValue = glm::dot(zNorm, normal);
 
+    if (axis != glm::vec3(0) && cosValue != 1.0f) {
+        auto mat = glm::rotate(glm::mat4(1.0f), glm::acos(cosValue), axis);
+        for (auto&& vertex : vertices) {
+            vertex.Position = glm::vec4(vertex.Position, 1.0f) * mat;
+            vertex.Normal = normal;
+        }
+    }
 
     vector<uint> indices = {
         0,  1,  2,  2,  3,  0,  // Z

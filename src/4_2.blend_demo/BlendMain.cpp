@@ -134,7 +134,7 @@ int main()
 
     // 草shader
     Shader grassShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj_2.fs").c_str());
-    Model grassModel(Mesh::CreatePlane(5.0f, glm::vec3(0, 1, 0), FileSystem::getPath("resources/grass.png").c_str()));
+    Model grassModel(Mesh::CreatePlane(5.0f, glm::vec3(0, 0, 1), FileSystem::getPath("resources/grass.png").c_str()));
 
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间

@@ -69,8 +69,10 @@ uniform vec3 viewPos;
 
 void main()
 {
-    FragColor = texture(material.diffuse, TexCoords);
-    //FragColor = vec4(1, 0, 0, 1);
+    vec4 texColor = texture(material.diffuse, TexCoords);
+    if(texColor.a < 0.1)
+        discard;
+    FragColor = texColor;
 }
 
 
