@@ -109,6 +109,12 @@ int main()
         {-6.3f,  0.0f, -4.3f},
         {7.5f,  0.0f, -8.6f}
     }; // 草位置
+    glm::vec3 windowPositions[] = {
+        {0.0f,  0.0f, -3.49f},
+        {4.5f,  0.0f,  -6.5f},
+        {7.0f,  0.0f,  -7.69f},
+        {-3.3f,  0.0f, -2.3f},
+    }; // 窗户位置
     glm::vec3 planePosition(0.0f, -1.5f, 0.0f); // 地板位置
     glm::vec3 lightPosition(4.0f, 5.0f, -3.0f);  // 点光源位置
 
@@ -136,6 +142,10 @@ int main()
     Shader grassShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj_2.fs").c_str());
     Model grassModel(Mesh::CreatePlane(5.0f, glm::vec3(0, 0, 1), FileSystem::getPath("resources/grass.png").c_str()));
 
+    // 半透明窗户shader
+    Shader windowShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj_3.fs").c_str());
+    Model windowModel(Mesh::CreatePlane(3.0f, glm::vec3(0, 0, 1), FileSystem::getPath("resources/blending_transparent_window.png").c_str()));
+
     double deltaTime = 0.0f; // 当前帧与上一帧的时间差
     double lastFrame = glfwGetTime(); // 上一帧的时间
     double currentFrame = glfwGetTime(); // 当前帧的时间
@@ -146,6 +156,10 @@ int main()
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    // 允许混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
@@ -180,6 +194,17 @@ int main()
         // 绘制灯
         modelRenderParam.SetModelPosition(lightPosition);
         lightCube.Draw(lightingShader, modelRenderParam);
+
+        // 绘制窗户，先排序，再渲染
+        std::map<float, glm::vec3> sortedPos;
+        for (auto&& pos : windowPositions) {
+            float distance = glm::length(pos - ourCamera.GetPos());
+            sortedPos[distance] = pos;
+        }
+        for (std::map<float, glm::vec3>::reverse_iterator it = sortedPos.rbegin(); it != sortedPos.rend(); it++) {
+            modelRenderParam.SetModelPosition(it->second);
+            windowModel.Draw(windowShader, modelRenderParam);
+        }
 
         glfwSwapBuffers(window);
         // 检查是否有触发事件（键盘输入、鼠标）、更新窗口状态
