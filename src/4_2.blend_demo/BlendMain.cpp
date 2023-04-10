@@ -161,6 +161,11 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // 允许面剔除，并剔除背向面，并设定逆时针为正向面
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
     // 渲染循环，根据处理器速度调用的频率会有不同，所以需要限制帧率
     while (!glfwWindowShouldClose(window))
     {
