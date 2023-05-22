@@ -74,6 +74,7 @@ set(CHAPTERS
     3.model_demo
     4_1.stencil_demo
     4_2.blend_demo
+    4_3.buffer_demo
 )
 
 # 为上面定义的章节创建子工程
