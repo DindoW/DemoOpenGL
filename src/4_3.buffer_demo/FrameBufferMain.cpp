@@ -199,7 +199,7 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // 渲染帧缓冲所需要的面片
-    Shader frameBufferShader(FileSystem::getPath("shaders/shader_4_buffer_1.vs").c_str(), FileSystem::getPath("shaders/shader_4_buffer_1.fs").c_str());
+    Shader frameBufferShader(FileSystem::getPath("shaders/shader_4_buffer_1.vs").c_str(), FileSystem::getPath("shaders/shader_4_buffer_4.fs").c_str());
     unsigned int bufferVAO, bufferVBO;
     glGenVertexArrays(1, &bufferVAO);
     glGenBuffers(1, &bufferVBO);
@@ -207,12 +207,12 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, bufferVBO);
     float bufferVertices[] = {
         //     ---- 位置 ----     - 纹理坐标 -
-             0.5f,  0.5f, 0.0f,  1.0f, 1.0f,   // 右上
-            -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,   // 左上
-            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,   // 左下
-             0.5f, -0.5f, 0.0f,  1.0f, 0.0f,   // 右下
-             0.5f,  0.5f, 0.0f,  1.0f, 1.0f,   // 右上
-            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,   // 左下
+             1.0f,  1.0f, 0.0f,  1.0f, 1.0f,   // 右上
+            -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,   // 左上
+            -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,   // 左下
+             1.0f, -1.0f, 0.0f,  1.0f, 0.0f,   // 右下
+             1.0f,  1.0f, 0.0f,  1.0f, 1.0f,   // 右上
+            -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,   // 左下
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(bufferVertices), bufferVertices, GL_STATIC_DRAW);
     // 顶点位置
