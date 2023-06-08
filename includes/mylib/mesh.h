@@ -4,12 +4,14 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <mylib/shader_s.h>
 
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <stb_image.h>
 
 
 using namespace std;
@@ -17,14 +19,23 @@ using uint = unsigned int;
 using uint8 = unsigned char;
 
 
-struct Vertex {
+struct SimpleVertex {
     glm::vec3 Position;
+
+    SimpleVertex() = default;
+    SimpleVertex(float posX, float posY, float posZ)
+        : Position(posX, posY, posZ) {
+
+    }
+};
+
+struct Vertex : SimpleVertex {
     glm::vec3 Normal;
     glm::vec2 TexCoords;
 
     Vertex() = default;
-    Vertex(float posX, float posY, float posZ, float normX, float normY, float normZ, float texX, float texY)
-        : Position(posX, posY, posZ),
+    Vertex(float posX, float posY, float posZ, float normX, float normY, float normZ, float texX, float texY) :
+        SimpleVertex(posX, posY, posZ),
         Normal(normX, normY, normZ),
         TexCoords(texX, texY) {
 
@@ -97,9 +108,56 @@ uint TextureFromFile(const char* fileName, const char* filePath = nullptr)
     return texture;
 }
 
+class SkyBoxMesh {
+public:
+    SkyBoxMesh(const vector<SimpleVertex>& vertices, const vector<uint>& indices, const unsigned int& texture) :
+        mVertices(vertices),
+        mIndices(indices),
+        mTextureID(texture)
+    {
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(SimpleVertex), &mVertices[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(unsigned int), &mIndices[0], GL_STATIC_DRAW);
+        // 顶点位置
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
+
+        glBindVertexArray(0);
+    }
+
+    void Draw(Shader& shader, ModelRenderParam& modelRenderParam) {
+        glDepthMask(GL_FALSE);
+        shader.use();
+        // 设置观察和投影矩阵
+        shader.setMat4("view", glm::mat4(glm::mat3(modelRenderParam.mViewMat)));
+        shader.setMat4("projection", modelRenderParam.mProjMat);
+        glBindVertexArray(VAO);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureID);
+
+        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
+        glDepthMask(GL_TRUE);
+    }
+
+private:
+    // 网格数据
+    vector<SimpleVertex> mVertices;
+    vector<unsigned int> mIndices;
+    unsigned int mTextureID;
+
+    // 渲染数据
+    unsigned int VAO, VBO, EBO;
+};
 
 class Mesh {
 public:
+
+    static SkyBoxMesh CreateSkyBox(const string& textureFolderPath);
     static Mesh CreateCube(float lengthOfSide, const string& texturePath);
     static Mesh CreatePlane(float lengthOfSide, glm::vec3& norm, const string& texturePath);
 
@@ -118,6 +176,71 @@ private:
     // 函数
     void _setupMesh();
 };
+
+SkyBoxMesh Mesh::CreateSkyBox(const string& textureFolderPath) {
+    float length = 1.0f;
+    vector<SimpleVertex> vertices = {
+        // -Z
+        SimpleVertex(-length, -length, -length),
+        SimpleVertex(length, -length, -length),
+        SimpleVertex(length,  length, -length),
+        SimpleVertex(-length,  length, -length),
+
+        // +Z
+        SimpleVertex(-length, -length,  length),
+        SimpleVertex(length, -length,  length),
+        SimpleVertex(length,  length,  length),
+        SimpleVertex(-length,  length,  length),
+    };
+
+    vector<uint> indices = {
+        0,  1,  2,  2,  3,  0,  // -Z
+        4,  7,  6,  6,  5,  4,  // +Z
+
+        4,  0,  3,  3,  7,  4,  // -X
+        1,  5,  6,  6,  2,  1, // +X
+
+        0,  4,  5,  5,  1,  0, // -Y
+        3,  2,  6,  6,  7,  3, // +Y
+    };
+
+    assert(textureFolderPath.length() > 0, "sky box need a texture!");
+
+    vector<std::string> faces;
+    faces.emplace_back(textureFolderPath + "/right.jpg");
+    faces.emplace_back(textureFolderPath + "/left.jpg");
+    faces.emplace_back(textureFolderPath + "/top.jpg");
+    faces.emplace_back(textureFolderPath + "/bottom.jpg");
+    faces.emplace_back(textureFolderPath + "/front.jpg");
+    faces.emplace_back(textureFolderPath + "/back.jpg");
+
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return SkyBoxMesh(vertices, indices, textureID);
+}
 
 Mesh Mesh::CreateCube(float lengthOfSide, const string& texturePath) {
     if (lengthOfSide <= 0.0f) {
