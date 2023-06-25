@@ -204,6 +204,10 @@ int main()
         modelRenderParam.SetModelPosition(lightPosition);
         lightCube.Draw(lightingShader, modelRenderParam);
 
+        // 最后绘制天空盒
+        sky.Draw(skyShader, modelRenderParam);
+
+        // 但是透明物体仍然需要最后渲染
         // 绘制窗户，先排序，再渲染
         std::map<float, glm::vec3> sortedPos;
         for (auto&& pos : windowPositions) {
@@ -214,9 +218,6 @@ int main()
             modelRenderParam.SetModelPosition(it->second);
             windowModel.Draw(windowShader, modelRenderParam);
         }
-
-        // 最后绘制天空盒
-        sky.Draw(skyShader, modelRenderParam);
 
         glfwSwapBuffers(window);
         // 检查是否有触发事件（键盘输入、鼠标）、更新窗口状态
