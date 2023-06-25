@@ -159,7 +159,7 @@ int main()
 
     // 允许深度测试
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
 
     // 允许混合
     glEnable(GL_BLEND);
@@ -184,9 +184,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ModelRenderParam modelRenderParam(ourCamera);
-
-        // 绘制天空盒
-        sky.Draw(skyShader, modelRenderParam);
 
         // 绘制地板
         //modelRenderParam.SetModelPosition(planePosition);
@@ -217,6 +214,9 @@ int main()
             modelRenderParam.SetModelPosition(it->second);
             windowModel.Draw(windowShader, modelRenderParam);
         }
+
+        // 最后绘制天空盒
+        sky.Draw(skyShader, modelRenderParam);
 
         glfwSwapBuffers(window);
         // 检查是否有触发事件（键盘输入、鼠标）、更新窗口状态
