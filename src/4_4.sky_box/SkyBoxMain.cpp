@@ -102,6 +102,8 @@ int main()
     }
 
     glm::vec3 model1Position(0.0f, 0.01f, -5.0f); // 模型1位置 抬高一点防止深度冲突
+    glm::vec3 model2Position(0.0f, 5.0f, -5.0f);
+    glm::vec3 model3Position(-5.0f, 5.0f, -5.0f);
     glm::vec3 grassPositions[] = {
         {-5.5f,  0.0f, -5.48f},
         {5.5f,  0.0f,  -6.51f},
@@ -126,6 +128,12 @@ int main()
     Shader objectShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_2_obj.fs").c_str());
     Model cubeModel1(Mesh::CreateCube(3.0f, FileSystem::getPath("resources/marble.jpg").c_str()));
 
+    Shader reflectShader(FileSystem::getPath("shaders/shader_4_reflect.vs").c_str(), FileSystem::getPath("shaders/shader_4_reflect.fs").c_str());
+    Model cubeModel2(Mesh::CreateCube(3.0f, ""));
+
+    Shader refractShader(FileSystem::getPath("shaders/shader_4_reflect.vs").c_str(), FileSystem::getPath("shaders/shader_4_refract.fs").c_str());
+    Model cubeModel3(Mesh::CreateCube(3.0f, ""));
+
     // 给待渲染obj设置光照参数
     LightParameters::MaterialParam lightMaterial(0, 1, 32.0f);
     LightParameters::DirectLight directLight(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.05f), glm::vec3(3.5f), glm::vec3(0.5f));
@@ -138,9 +146,6 @@ int main()
     // 灯光shader
     Shader lightingShader(FileSystem::getPath("shaders/shader_2_light.vs").c_str(), FileSystem::getPath("shaders/shader_2_light.fs").c_str());
     Model lightCube(Mesh::CreateCube(0.5f, ""));
-
-    // 地板shader
-    Model plane(Mesh::CreatePlane(100.0f, glm::vec3(0, 1, 0), FileSystem::getPath("resources/metal.png").c_str()));
 
     // 草shader
     Shader grassShader(FileSystem::getPath("shaders/shader_3_obj.vs").c_str(), FileSystem::getPath("shaders/shader_3_obj_2.fs").c_str());
@@ -185,14 +190,22 @@ int main()
 
         ModelRenderParam modelRenderParam(ourCamera);
 
-        // 绘制地板
-        //modelRenderParam.SetModelPosition(planePosition);
-        //plane.Draw(objectShader, modelRenderParam);
-
         // 绘制模型1
         modelRenderParam.SetModelPosition(model1Position);
         cubeModel1.UpdateLightParam(objectShader, modelRenderParam);
         cubeModel1.Draw(objectShader, modelRenderParam);
+
+        // 绘制模型2，反射
+        modelRenderParam.SetModelPosition(model2Position);
+        reflectShader.use();
+        reflectShader.setVec3("cameraPos", modelRenderParam.mCameraPos);
+        cubeModel2.Draw(reflectShader, modelRenderParam);
+
+        // 绘制模型3，折射
+        modelRenderParam.SetModelPosition(model3Position);
+        refractShader.use();
+        refractShader.setVec3("cameraPos", modelRenderParam.mCameraPos);
+        cubeModel3.Draw(refractShader, modelRenderParam);
 
         // 绘制草
         for (auto&& pos : grassPositions) {
